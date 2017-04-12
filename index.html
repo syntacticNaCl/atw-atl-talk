@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Better Theme Customizer - By Garrett Rappaport</title>
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/black.css">
+
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section>
+				<h1>Better Theme Customizer</h1>
+				<img src="img/customize-all.jpg" alt="" style="height:200px;width:200px">
+				<p>
+					by: Garrett Rappaport 
+				</p>
+			</section>
+			<section>
+				<h2>WHOAMI</h2>
+				<p>
+					Software Developer @ Sideways8 Interactive
+				</p>
+				<p>
+					Avid table top gamer <br> 
+					Musician <br>
+					Star Wars nerd <br>
+					Geek Orthodox
+				</p>
+			</section>
+			<section>
+				<h2>
+					The Customize API
+				</h2>
+				<ul>
+					<li>Added in WordPress 3.4</li>
+					<li>Was called Theme Customization API</li>
+					<li>Allows developers to customize and add controls to the admin screen</li>
+					<li>Live preview</li>
+					<li>Accessible through "Appearance" → "Customize"</li>
+				</ul>
+			</section>
+			<section>
+				<h2>
+					The Customize API
+				</h2>
+				<ul>
+					<li>
+						Object-oriented
+					</li>
+					<li>
+						Four main parts
+						<ul>
+							<li>
+								Panels - containers for sections
+							</li>
+							<li>
+								Sections - UI containers for controls
+							</li>
+							<li>
+								Settings - handle live-previewing, saving, and sanitization of your customizer objects
+							</li>
+							<li>
+								Controls - define what the input type is (e.g. textarea, dropdown, etc.) and make a setting something controllable and visible.
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section>
+				<h2>
+					Where are the values stored?
+				</h2>
+				<ul>
+					<li>
+						Stored in the wp_options table
+					</li>
+					<li>
+						Column name: option_name
+					</li>
+					<li>
+						Column value: theme_mods_{theme_name} (theme_mods_twentyseventeen)
+					</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Why Our Implementation is Better</h2>
+				<img src="/img/winning.png" alt="" style="heigh:300px;width:300px">
+			</section>
+			<section>
+				<h2>What is the Better Theme Customizer</h2>
+				<ul>
+					<li>Wrapper for the Customizer API</li>
+					<li>Extends functionality</li>
+					<li>Easy to setup and configure</li>
+				</ul>
+			</section>
+			<section>
+				<h2>
+					Why we use the Better Theme Customizer?
+				</h2>
+				<ul>
+					<li>
+						We build a lot of custom themes
+					</li>
+					<li>
+						Saves rewriting code.
+					</li>
+					<li>
+						Easy configuration
+					</li>
+					<li>
+						Prebuilt controls for Gravity Forms, Images, Posts, etc
+					</li>
+					<li>
+						Most themes use a "hacky" implementation without the Customize API (Divi)
+					</li>
+				</ul>
+			</section>
+			<section data-markdown>
+				<script type="text/template">
+					## Features 
+					- Easily add theme mods using a config file. Now supporting YAML (YAML Ain't Markup Language). 
+					- Add theme mods for selecting taxonomies,
+					posts, post_types, terms, images, etc 
+					- Works for multi-site setups 
+					- Comes with some sample options in the config file
+					to get you started ('/options/btc-options.php', '/options/btc-options.yml')
+				</script>
+			</section>
+			<section data-markdown>
+				<script type="text/template">
+				## Setup
+				- Configure and add to the customizer
+				- We wrap the customize_register action to do this for you.
+				- Load order:
+					* First tries to load the YAML file
+					* Then tries to load the PHP file
+
+					<aside class="notes">
+						In the WP Customizer, there are four different elements to note: 
+						1. Panels - Top level element that can only contain sections.
+						2. Sections - Can only contain controls. Can be top level or inside a panel. 
+						3. Settings - Defines the default value, the name of the setting, and how it is stored in the database. 
+						4. Controls - Controls can only be placed inside a section, they define what the input type is (e.g. textarea, dropdown, etc.) and make a setting something controllable and visible.
+						In our theme customizer, this has all been simplified into a PHP array and settings and controls are merged into one
+						element (referred to as an option, for clarity). We have also added a YAML file ('/options/btc-options.php') to make
+						things a little cleaner. This file will try to be loaded first.
+					</aside>
+				</script>
+			</section>
+			<section data-markdown>
+				<script type="text/template">
+					## Config Load Order - YAML
+
+					* First tries to load the YAML file
+						- looks in theme directory, then plugin directory
+							* $theme_dir . '/includes/btc-options.yml',
+							* $theme_dir . '/inc/btc-options.yml',
+							* $plugin_dir . '/options/btc-options.yml',
+
+				</script>
+			</section>
+				<section data-markdown>
+				<script type="text/template">
+					## Config Load Order - PHP
+
+					* Then tries to load the PHP file
+						- PHP array of settings and controls merged into one element
+						- looks in theme directory, then plugin directory
+							* $theme_dir . '/includes/btc-options.php',
+							* $theme_dir . '/inc/btc-options.php',
+							* $theme_dir . '/btc-options.php',
+							* $plugin_dir . '/options/btc-options.php'
+
+				</script>
+			</section>
+			<section data-markdown>
+				<script type="text/template">
+					## Option File
+					The options file contains some code to tie the variable into WordPress. The $settings_array variable holds our array of elements
+					and uses the following format: 
+					- Top level can contain panels and sections 
+						* If top level is panel, sections go here
+							- Options go here 
+						* If top level is section, controls go here
+				</script>
+			</section>
+			<section>
+				<h1>Let's Dive In</h1>
+			</section>
+			<section data-markdown>
+				<script type="text/template">
+			       Fork us on Github: [Better Theme Customizer](https://github.com/sideways8interactive/better-theme-customizer)
+				</script>
+			</section>
+			<section>
+				<h1>Questions?</h1>
+				<img src="/img/einstein_question.png" alt="">
+			</section>
+			<section>
+				<h1>Thanks!!</h1>
+				<p>
+					<i class="fa fa-github"></i> github.com/syntacticNaCl
+				</p>
+				<p>
+
+					<i class="fa fa-twitter"></i> @syntacticNaCl
+				</p>
+				<p>
+
+					<i class="fa fa-hashtag"></i> Freenode IRC: syntacticNaCl
+				</p>
+			</section>
+		</div>
+	</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.js"></script>
+
+	<script>
+		// More info https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			history: true,
+
+			// More info https://github.com/hakimel/reveal.js#dependencies
+			dependencies: [{
+					src: 'plugin/markdown/marked.js'
+				},
+				{
+					src: 'plugin/markdown/markdown.js'
+				},
+				{
+					src: 'plugin/notes/notes.js',
+					async: true
+				},
+				{
+					src: 'plugin/highlight/highlight.js',
+					async: true,
+					callback: function () {
+						hljs.initHighlightingOnLoad();
+					}
+				}
+			]
+		});
+	</script>
+</body>
+
+</html>
